@@ -1,0 +1,32 @@
+Admin:
+
+#include "User.h"
+#include "Customer.h"
+#include "Doctor.h"
+
+class Admin : public User {
+public:
+    Admin(int i, std::string n, std::string p, std::string t)
+        : User(i, n, p, Role::Admin, t) {}
+
+    void createUser(const User& user, const std::string& filename) {
+        User::createUser(user, filename);
+    }
+
+    void updateUser(int id, const User& user, const std::string& filename) {
+        User::updateUser(id, user, filename);
+    }
+
+    void deleteUser(int id, const std::string& filename) {
+        User::deleteUser(id, filename);
+    }
+
+    void viewAllUsers(const std::string& filename) {
+        auto users = User::readUsersFromFile(filename);
+        for (const auto& u : users) {
+            std::cout << u.toString() << "\n";
+        }
+    }
+};
+
+#endif // ADMIN_H
