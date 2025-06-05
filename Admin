@@ -1,32 +1,92 @@
-Admin:
+#ifndef ADMIN_H
+#define ADMIN_H
 
 #include "User.h"
 #include "Customer.h"
 #include "Doctor.h"
 
+using namespace std;
+
+string filename = "user.txt";
 class Admin : public User {
 public:
-    Admin(int i, std::string n, std::string p, std::string t)
-        : User(i, n, p, Role::Admin, t) {}
+	Admin(int i, string n, string p, string t)
+		: User(i, n, p, Role::Admin, t) {}
 
-    void createUser(const User& user, const std::string& filename) {
-        User::createUser(user, filename);
-    }
+// 	void createUser(const User& user, const string& filename) {
+// 		User::createUser(user, filename);
+// 	}
 
-    void updateUser(int id, const User& user, const std::string& filename) {
-        User::updateUser(id, user, filename);
-    }
+	void updateUser(int id, const User& user, const string& filename) {
+		User::updateUser(id, user, filename);
+	}
 
-    void deleteUser(int id, const std::string& filename) {
-        User::deleteUser(id, filename);
-    }
+	void deleteUser(int id, const string& filename) {
+		User::deleteUser(id, filename);
+	}
 
-    void viewAllUsers(const std::string& filename) {
-        auto users = User::readUsersFromFile(filename);
-        for (const auto& u : users) {
-            std::cout << u.toString() << "\n";
-        }
-    }
+	void viewAllUsers(const string& filename) {
+		auto users = User::readUsersFromFile(filename);
+		for (const auto& u : users) {
+			cout << u.toString() << "\n";
+		}
+	}
+
+	void menu() {
+		int choice;
+		do {
+			cout << "\n--- Admin Menu ---\n";
+			cout << "1. Create Customer\n";
+			cout << "2. Create Doctor\n";
+			cout << "3. Update User\n";
+			cout << "4. Delete User\n";
+			cout << "5. View All Users\n";
+			cout << "0. Logout\n";
+			cout << "Choice: ";
+			cin >> choice;
+
+			if (choice == 1) {
+				// int id;
+				// string name, password, tel;
+				// cout << "Enter ID, Name, Password, Tel: ";
+				// cin >> id >> name >> password >> tel;
+				// Customer c(id, name, password, tel);
+				// createUser(c, filename);
+				string name, password, tel;
+				cout << "Enter Name, Password, Tel: ";
+				cin >> name >> password >> tel;
+				User::createUser(name, password, Role::Customer, tel, filename);
+			} else if (choice == 2) {
+				// int id;
+				// string name, password, tel;
+				// cout << "Enter ID, Name, Password, Tel: ";
+				// cin >> id >> name >> password >> tel;
+				// Doctor d(id, name, password, tel);
+				// createUser(d, filename);
+				string name, password, tel;
+				cout << "Enter Name, Password, Tel: ";
+				cin >> name >> password >> tel;
+				User::createUser(name, password, Role::Doctor, tel, filename);
+			} else if (choice == 3) {
+				int id;
+				string name, password, tel;
+				int role;
+				cout << "Enter ID to update, then New Name, Password, Role(0-2), Tel: ";
+				cin >> id >> name >> password >> role >> tel;
+				User u(id, name, password, static_cast<Role>(role), tel);
+				updateUser(id, u, filename);
+			} else if (choice == 4) {
+				int id;
+				cout << "Enter ID to delete: ";
+				cin >> id;
+				deleteUser(id, filename);
+			} else if (choice == 5) {
+				viewAllUsers(filename);
+			}
+		} while (choice != 0);
+	}
 };
+
+#endif // ADMIN_H
 
 #endif // ADMIN_H
