@@ -1,0 +1,114 @@
+#ifndef CUSTOMER_H
+#define CUSTOMER_H
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include "User.h"
+#include "Doctor.h"
+
+using namespace std;
+
+class Customer : public User {
+private:
+	int age = 0;
+	int weight = 0;
+	int height = 0;
+	int pressure = 0;
+	string description;
+	const string filename = "customers.txt";
+
+public:
+	Customer(int i, string n, string p, string t)
+		: User(i, n, p, Role::Customer, t) {}
+
+	void readHealthInformationFromFile(const string& filename, int customerId) {
+		ifstream file(filename);
+		string line;
+		while (getline(file, line)) {
+			int id = stoi(line);
+			if (id == customerId) {
+				if (getline(file, line)) {
+					istringstream ss(line);
+					ss >> age >> weight >> height >> pressure;
+				}
+				if (getline(file, line)) {
+					description = line;
+				}
+				break;
+			} else {
+				getline(file, line); // skip health numbers
+				getline(file, line); // skip description
+			}
+		}
+	}
+
+	void setHealthInfo(int a, int w, int h, int p, const string& desc) {
+		age = a;
+		weight = w;
+		height = h;
+		pressure = p;
+		description = desc;
+	}
+
+	void viewPersonalInfo() const {
+		cout << "Age: " << age << "\n";
+		cout << "Weight: " << weight << "\n";
+		cout << "Height: " << height << "\n";
+		cout << "Blood Pressure: " << pressure << "\n";
+		cout << "Health Description: " << description << "\n";
+	}
+
+	void menu() {
+		readHealthInformationFromFile(filename, id);
+		int choice;
+		do {
+			cout << "\n--- Customer Menu ---\n";
+			cout << "1. Reserve Schedule with Doctor\n";
+			cout << "2. View Personal Health Information\n";
+			cout << "0. Logout\n";
+			cout << "Enter choice: ";
+			cin >> choice;
+
+			switch (choice) {
+			case 1: {
+				int doctorId, scheduleInt;
+				cout << "Enter Doctor ID: ";
+				cin >> doctorId;
+
+				auto schedules = Doctor:: getScheduleByDoctorId(doctorId, "doctors.txt");
+
+				for (size_t i = 0; i < schedules.size(); ++i) {
+					cout << Doctor::scheduleToString(schedules[i]) << "\n";
+				}
+
+				cout << "Enter schedule (0 = Monday1, ..., 14 = Friday3): ";
+				cin >> scheduleInt;
+
+				ofstream out("reserves.txt", ios::app);
+				if (out.is_open()) {
+					out << doctorId << " " << id << " " << scheduleInt << "\n";
+					out.close();
+					cout << "Reservation completed!\n";
+				} else {
+					cerr << "Failed to write to reserves.txt\n";
+				}
+				break;
+			}
+			case 2:
+				viewPersonalInfo();
+				break;
+
+			case 0:
+				cout << "Logging out...\n";
+				break;
+
+			default:
+				cout << "Invalid choice.\n";
+			}
+		} while (choice != 0);
+	}
+
+
+};
+#endif // CUSTOMER_H
