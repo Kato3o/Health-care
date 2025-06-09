@@ -1,0 +1,42 @@
+#ifndef APP_H
+#define APP_H
+
+#include "User.h"
+#include "Admin.h"
+#include "Customer.h"
+using namespace std;
+
+class App {
+public:
+	User currentUser;
+
+	App(const User& user) : currentUser(user) {
+
+	}
+
+	void run() {
+		cout << "Welcome! " << currentUser.name << endl;
+		switch (currentUser.role) {
+		case Role::Admin: {
+			Admin admin(currentUser.id, currentUser.getName(), currentUser.getPassword(), currentUser.tel);
+			admin.menu();
+			break;
+		}
+		case Role::Customer: {
+			Customer customer(currentUser.id, currentUser.getName(), currentUser.getPassword(), currentUser.tel);
+			customer.menu();
+			break;
+		}
+		case Role::Doctor: {
+			Doctor doctor(currentUser.id, currentUser.getName(), currentUser.getPassword(), currentUser.tel);
+			doctor.menu();
+			break;
+		}
+		}
+	}
+
+	void logout() {
+		cout << "User '" << currentUser.getName() << "' logged out.\n";
+	}
+};
+#endif // APP_H
