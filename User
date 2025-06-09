@@ -1,0 +1,162 @@
+#ifndef USER_H 
+#define USER_H
+
+#include <string>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <iostream>
+
+using namespace std;
+
+enum class Role { Admin = 0, Customer = 1, Doctor = 2 };
+
+class User {
+protected:
+	string password;
+public:
+	string name;
+	Role role;
+	string tel;
+	int id;
+
+	User(int i, string n, string p, Role r, string t)
+		: id(i), name(n), password(p), role(r), tel(t) {}
+
+	string toString() const {
+		return to_string(id) + " " + name + " " + password + " " +
+		       to_string(static_cast<int>(role)) + " " + tel;
+	}
+
+	static vector<User> readUsersFromFile(const string& filename) {
+		vector<User> users;
+		ifstream file(filename);
+		if (!file) {
+			cerr << "Error: Could not open " << filename << "\n";
+			return users;
+		}
+
+		string line;
+		while (getline(file, line)) {
+			istringstream iss(line);
+			int id, roleInt;
+			string name, password, tel;
+			if (iss >> id >> name >> password >> roleInt >> tel) {
+				users.emplace_back(id, name, password, static_cast<Role>(roleInt), tel);
+			}
+		}
+
+		return users;
+	}
+
+	static void writeUsersToFile(const vector<User>& users, const string& filename) {
+		ofstream file(filename);
+		for (const auto& user : users) {
+			file << user.toString() << "\n";
+		}
+	}
+
+// 	static void createUser(const User& newUser, const string& filename) {
+// 		vector<User> users = readUsersFromFile(filename);
+// 		auto it = find_if(users.begin(), users.end(), [&](const User& u) {
+// 			return u.id == newUser.id;
+// 		});
+
+// 		if (it != users.end()) {
+// 			cout << "User with ID " << newUser.id << " already exists. Cannot create duplicate.\n";
+// 			return;
+// 		}
+
+// 		ofstream file(filename, ios::app);
+// 		if (!file) {
+// 			cerr << "Error: Could not open " << filename << " for writing.\n";
+// 			return;
+// 		}
+
+// 		file << newUser.toString() << "\n";
+// 		cout << "User with ID " << newUser.id << " created successfully.\n";
+// 	}
+	static void createUser(const string& name, const string& password, Role role, const string& tel, const string& filename) {
+		vector<User> users = readUsersFromFile(filename);
+
+		// Check if username already exists (optional, but useful)
+		auto it = find_if(users.begin(), users.end(), [&](const User& u) {
+			return u.name == name;
+		});
+
+		if (it != users.end()) {
+			cout << "User with name '" << name << "' already exists. Cannot create duplicate.\n";
+			return;
+		}
+
+		// Get max ID
+		int maxId = 0;
+		for (const auto& user : users) {
+			if (user.id > maxId)
+				maxId = user.id;
+		}
+
+		int newId = maxId + 1;
+		User newUser(newId, name, password, role, tel);
+
+		ofstream file(filename, ios::app);
+		if (!file) {
+			cerr << "Error: Could not open " << filename << " for writing.\n";
+			return;
+		}
+
+		file << newUser.toString() << "\n";
+		cout << "User created with ID " << newUser.id << "\n";
+	}
+
+
+	static void updateUser(int userId, const User& updatedUser, const string& filename) {
+		vector<User> users = readUsersFromFile(filename);
+		for (auto& user : users) {
+			if (user.id == userId) {
+				user = updatedUser;
+				break;
+			}
+		}
+		writeUsersToFile(users, filename);
+	}
+
+	static void deleteUser(int userId, const string& filename) {
+		vector<User> users = readUsersFromFile(filename);
+		users.erase(remove_if(users.begin(), users.end(), [userId](const User& u) {
+			return u.id == userId;
+		}), users.end());
+		writeUsersToFile(users, filename);
+	}
+
+	// static optional<User> getUserById(int id, const string& filename) {
+	// 	vector<User> users = readUsersFromFile(filename);
+	// 	for (const auto& user : users) {
+	// 		if (user.id == id) {
+	// 			return user;
+	// 		}
+	// 	}
+	// 	return nullopt; // User not found
+	// }
+
+	string getName() {
+		return name;
+	}
+
+	void setName(string n) {
+		name = n;
+	}
+
+
+	string getPassword() {
+		return password;
+	}
+
+	void setPassword(string p) {
+		password = p;
+	}
+
+};
+
+#endif // USER_H
