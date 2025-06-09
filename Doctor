@@ -1,0 +1,205 @@
+#ifndef DOCTOR_H
+#define DOCTOR_H
+
+#include <fstream>
+#include <sstream>
+#include <string>
+#include "User.h"
+
+using namespace std;
+
+enum class Schedule {
+	Monday1, Monday2, Monday3,
+	Tuesday1, Tuesday2, Tuesday3,
+	Wednesday1, Wednesday2, Wednesday3,
+	Thursday1, Thursday2, Thursday3,
+	Friday1, Friday2, Friday3
+};
+
+class Doctor : public User {
+private:
+	vector<Schedule> schedules;
+	vector<int> customerIds;
+public:
+	Doctor(int i, string n, string p, string t)
+		: User(i, n, p, Role::Doctor, t) {}
+
+	void setSchedule(const vector<Schedule>& newSchedules) {
+		schedules = newSchedules;
+	}
+
+// 	void updateSchedule(int index, Schedule newSchedule) {
+// 		if (index >= 0 && index < schedules.size()) {
+// 			schedules[index] = newSchedule;
+// 		} else {
+// 			cout << "Invalid index.\n";
+// 		}
+// 	}
+
+	void readSchedulesAndCustomersFromFile(const string& filename, int doctorId) {
+		ifstream file(filename);
+		if (!file.is_open()) {
+			cerr << "Failed to open " << filename << "\n";
+			return;
+		}
+
+		string line;
+		while (getline(file, line)) {
+			int id = stoi(line);
+			if (id == doctorId) {
+				// Read schedules (next line)
+				if (getline(file, line)) {
+					istringstream ss(line);
+					int s;
+					schedules.clear(); // Clear existing data
+					while (ss >> s) {
+						schedules.push_back(static_cast<Schedule>(s));
+					}
+				}
+
+				// Read customer IDs (next line)
+				if (getline(file, line)) {
+					istringstream ss(line);
+					int cid;
+					customerIds.clear(); // Clear existing data
+					while (ss >> cid) {
+						customerIds.push_back(cid);
+					}
+				}
+
+				break; // Found the doctor, done reading
+			} else {
+				// Skip next 2 lines
+				getline(file, line); // skip schedules
+				getline(file, line); // skip customers
+			}
+		}
+
+		file.close();
+	}
+
+	void viewSchedules() const {
+		cout << "Schedules for Dr. " << name << ":\n";
+		for (size_t i = 0; i < schedules.size(); ++i) {
+			cout << i << ": " << scheduleToString(schedules[i]) << "\n";
+		}
+		// for (auto& s: schedules) {
+		//     cout << scheduleToString(s) << "\n";
+		// }
+	}
+
+	static string scheduleToString(Schedule s) {
+		switch (s) {
+		case Schedule::Monday1:
+			return "0 Monday(AM 9:00~12:00)";
+		case Schedule::Monday2:
+			return "1 Monday(PM 14:00~17:00)";
+		case Schedule::Monday3:
+			return "2 Monday(PM 18:30~21:30)";
+		case Schedule::Tuesday1:
+			return "3 Tuesday(AM 9:00~12:00)";
+		case Schedule::Tuesday2:
+			return "4 Tuesday(PM 14:00~17:00)";
+		case Schedule::Tuesday3:
+			return "5 Tuesday(PM 18:30~21:30)";
+		case Schedule::Wednesday1:
+			return "6 Wednesday(AM 9:00~12:00)";
+		case Schedule::Wednesday2:
+			return "7 Wednesday(PM 14:00~17:00)";
+		case Schedule::Wednesday3:
+			return "8 Wednesday(PM 18:30~21:30)";
+		case Schedule::Thursday1:
+			return "9 Thursday(AM 9:00~12:00)";
+		case Schedule::Thursday2:
+			return "10 Thursday(PM 14:00~17:00)";
+		case Schedule::Thursday3:
+			return "11 Thursday(PM 18:30~21:30)";
+		case Schedule::Friday1:
+			return "12 Friday(AM 9:00~12:00)";
+		case Schedule::Friday2:
+			return "13Friday(PM 14:00~17:00)";
+		case Schedule::Friday3:
+			return "14 Friday(PM 18:30~21:30)";
+		default:
+			return "Unknown";
+		}
+	}
+
+	static vector<Schedule> getScheduleByDoctorId(int doctorId, const string& filename) {
+		ifstream file(filename);
+		string line;
+		vector<Schedule> result;
+
+		while (getline(file, line)) {
+			int id = stoi(line);
+			if (id == doctorId) {
+				if (getline(file, line)) {
+					istringstream ss(line);
+					int s;
+					while (ss >> s) {
+						result.push_back(static_cast<Schedule>(s));
+					}
+				}
+
+				break;  // Found doctor
+			} else {
+				// Skip next 2 lines (schedules + customers)
+				getline(file, line);
+				getline(file, line);
+			}
+		}
+
+		return result;
+	}
+
+	void menu() {
+		cout << id << endl;
+		readSchedulesAndCustomersFromFile("doctors.txt", id);
+		int choice;
+		do {
+			cout << "\n--- Doctor Menu ---\n";
+			cout << "1. Set Schedule\n";
+// 			cout << "2. Update Schedule\n";
+			cout << "2. View All Schedule\n";
+			cout << "0. Logout\n";
+			cout << "Enter choice: ";
+			cin >> choice;
+
+			switch (choice) {
+			case 1: {
+				int n;
+				cout << "How many schedules to set? ";
+				cin >> n;
+				vector<Schedule> newSchedules;
+				for (int i = 0; i < n; ++i) {
+					int s;
+					cout << "Enter schedule index (0=Monday1, ..., 14=Friday3): ";
+					cin >> s;
+					newSchedules.push_back(static_cast<Schedule>(s));
+				}
+				setSchedule(newSchedules);
+				break;
+			}
+// 			case 2: {
+// 				int index, s;
+// 				cout << "Enter index to update: ";
+// 				cin >> index;
+// 				cout << "Enter new schedule index (0=Monday1, ..., 14=Friday3): ";
+// 				cin >> s;
+// 				updateSchedule(index, static_cast<Schedule>(s));
+// 				break;
+// 			}
+			case 2:
+				viewSchedules();
+				break;
+			case 0:
+				cout << "Logging out...\n";
+				break;
+			default:
+				cout << "Invalid option.\n";
+			}
+		} while (choice != 0);
+	}
+};
+
+#endif // DOCTOR_H
