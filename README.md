@@ -16,3 +16,10 @@ Admin 實操:
 customer 實操:
 ![image](https://github.com/user-attachments/assets/f9d8c07b-b189-4eeb-84d3-a93853ebb539)
 
+![image](https://github.com/user-attachments/assets/857cbbeb-0e0f-4d8d-82aa-0e7da4535e0b)
+
+![image](https://github.com/user-attachments/assets/a8f0ca38-a532-4456-9e97-eff465d65788)
+
+
+
+
